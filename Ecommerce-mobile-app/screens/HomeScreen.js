@@ -7,10 +7,14 @@ import {
   Image,
   FlatList,
   TouchableOpacity,
+  Modal,
+  Button,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getAllProducts } from '../api';
 import { decode as atob } from 'base-64';
+import { useCart } from '../contexts/CartContext'; // al inicio
+
 
 const BRANDS = [
   { name: 'Xbox', image: require('../assets/brands/Xbox.png') },
@@ -25,6 +29,8 @@ export default function HomeScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [products, setProducts] = useState([]);
   const [timeLeft, setTimeLeft] = useState(3600);
+  const [selectedProduct, setSelectedProduct] = useState(null); // producto activo
+  const [modalVisible, setModalVisible] = useState(false); // visibilidad del modal
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -57,8 +63,25 @@ export default function HomeScreen({ navigation }) {
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
+  const openProductModal = (product) => {
+    setSelectedProduct(product);
+    setModalVisible(true);
+  };
+
+  const closeProductModal = () => {
+    setSelectedProduct(null);
+    setModalVisible(false);
+  };
+
+  const { addToCart } = useCart();
+
+  const handleAddToCart = () => {
+    addToCart(selectedProduct);
+    closeProductModal();
+  };
+
   const renderProduct = ({ item }) => (
-    <TouchableOpacity style={styles.card}>
+    <TouchableOpacity style={styles.card} onPress={() => openProductModal(item)}>
       <Image source={{ uri: item.imageUrl }} style={styles.productImage} />
       <Text style={styles.productBrand}>{item.category}</Text>
       <Text style={styles.productTitle}>{item.name}</Text>
@@ -100,6 +123,26 @@ export default function HomeScreen({ navigation }) {
         scrollEnabled={false}
         contentContainerStyle={{ paddingBottom: 60 }}
       />
+
+      {/* Modal de producto */}
+      <Modal visible={modalVisible} animationType="slide" transparent>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            {selectedProduct && (
+              <>
+                <Image source={{ uri: selectedProduct.imageUrl }} style={styles.modalImage} />
+                <Text style={styles.modalTitle}>{selectedProduct.name}</Text>
+                <Text style={styles.modalDesc}>{selectedProduct.description}</Text>
+                <Text style={styles.modalPrice}>${selectedProduct.price}</Text>
+                <View style={styles.modalButtons}>
+                  <Button title="Close" color="#666" onPress={closeProductModal} />
+                  <Button title="Add to Cart" onPress={handleAddToCart} />
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -172,5 +215,46 @@ const styles = StyleSheet.create({
   brandImage: {
     width: 70,
     height: 70,
+  },
+  // Modal styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 12,
+    width: '85%',
+    alignItems: 'center',
+  },
+  modalImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 15,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  modalDesc: {
+    textAlign: 'center',
+    marginBottom: 10,
+    color: '#444',
+  },
+  modalPrice: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 15,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: 15,
   },
 });
