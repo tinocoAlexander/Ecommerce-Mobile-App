@@ -3,12 +3,11 @@ import React from 'react';
 import { View, Text, Button, Alert, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function ProfileScreen({ navigation, route }) {
+export default function ProfileScreen({ setIsLoggedIn }) {
   const handleLogout = async () => {
     await AsyncStorage.removeItem('userToken');
     Alert.alert('Session closed', 'You have been logged out.');
-    // Regresa al login
-    route.params.setIsLoggedIn(false);
+    setIsLoggedIn(false);
   };
 
   return (

@@ -4,7 +4,7 @@ import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
 import { loginUser } from '../api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen({ navigation, setIsLoggedIn }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 

@@ -19,34 +19,34 @@ import RegisterScreen from '../screens/RegisterScreen';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function MainAppTabs() {
-  return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-
-          if (route.name === 'Home') iconName = focused ? 'home' : 'home-outline';
-          else if (route.name === 'Products') iconName = focused ? 'list' : 'list-outline';
-          else if (route.name === 'Cart') iconName = focused ? 'cart' : 'cart-outline';
-          else if (route.name === 'Profile') iconName = focused ? 'person' : 'person-outline';
-
-          return <Ionicons name={iconName} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: '#007bff',
-        tabBarInactiveTintColor: 'gray',
-      })}
-    >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Products" component={ProductListScreen} />
-      <Tab.Screen name="Cart" component={CartScreen} />
-      <Tab.Screen name="Profile">
-        {(props) => <ProfileScreen {...props} setIsLoggedIn={props.route.params?.setIsLoggedIn} />}
-      </Tab.Screen>
-    </Tab.Navigator>
-  );
-}
+function MainAppTabs({ setIsLoggedIn }) {
+    return (
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          headerShown: false,
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName;
+  
+            if (route.name === 'Home') iconName = focused ? 'home' : 'home-outline';
+            else if (route.name === 'Products') iconName = focused ? 'list' : 'list-outline';
+            else if (route.name === 'Cart') iconName = focused ? 'cart' : 'cart-outline';
+            else if (route.name === 'Profile') iconName = focused ? 'person' : 'person-outline';
+  
+            return <Ionicons name={iconName} size={size} color={color} />;
+          },
+          tabBarActiveTintColor: '#007bff',
+          tabBarInactiveTintColor: 'gray',
+        })}
+      >
+        <Tab.Screen name="Home" component={HomeScreen} />
+        <Tab.Screen name="Products" component={ProductListScreen} />
+        <Tab.Screen name="Cart" component={CartScreen} />
+        <Tab.Screen name="Profile">
+          {(props) => <ProfileScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
+        </Tab.Screen>
+      </Tab.Navigator>
+    );
+  }
 
 export default function AppNavigator() {
   const [isLoggedIn, setIsLoggedIn] = useState(null); // null = cargando
@@ -66,8 +66,8 @@ export default function AppNavigator() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isLoggedIn ? (
           <Stack.Screen name="MainApp">
-            {(props) => <MainAppTabs {...props} initialParams={{ setIsLoggedIn }} />}
-          </Stack.Screen>
+          {(props) => <MainAppTabs {...props} setIsLoggedIn={setIsLoggedIn} />}
+         </Stack.Screen>
         ) : (
           <>
             <Stack.Screen name="Login">
