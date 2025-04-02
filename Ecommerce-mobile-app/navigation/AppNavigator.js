@@ -16,6 +16,8 @@ import ProfileScreen from '../screens/ProfileScreen';
 // Pantallas de autenticación
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
+import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
+
 
 import LogoTitle from '../components/LogoTitle';
 
@@ -79,6 +81,7 @@ export default function AppNavigator() {
             {(props) => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
             </Stack.Screen>
             <Stack.Screen name="Register" component={RegisterScreen} />
+            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
           </>
         )}
       </Stack.Navigator>
