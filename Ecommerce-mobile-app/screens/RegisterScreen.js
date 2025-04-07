@@ -10,6 +10,9 @@ import {
 } from 'react-native';
 import axios from 'axios';
 
+// URL de tu ESB para crear usuario sin token
+const ESB_USER_ENDPOINT = 'https://esb-service-production-132b.up.railway.app/api/v1/esb/user';
+
 export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -21,20 +24,26 @@ export default function RegisterScreen({ navigation }) {
       return;
     }
 
+    // RECOMENDACIÓN: Verificar aquí que password >= 8 caracteres,
+    // phone de 10 dígitos, etc., para un feedback inmediato.
+
     try {
-      const response = await axios.post(
-        'https://esb-service-production-132b.up.railway.app/api/v1/esb/user',
-        {
-          username,
-          password,
-          phone,
-        }
-      );
+      // Enviamos los campos junto con roleId (ej: 2 para 'cliente')
+      const response = await axios.post(ESB_USER_ENDPOINT, {
+        username,
+        password,
+        phone,
+        roleId: 2 // Ajusta según el id del rol en tu DB
+      });
+
       Alert.alert('Registro exitoso', 'Ya puedes iniciar sesión');
       navigation.replace('Login');
     } catch (error) {
       console.error('Register error:', error.response?.data || error.message);
-      Alert.alert('Error', error.response?.data?.message || 'No se pudo registrar');
+      Alert.alert(
+        'Error',
+        error.response?.data?.message || 'No se pudo registrar'
+      );
     }
   };
 
@@ -82,6 +91,7 @@ export default function RegisterScreen({ navigation }) {
   );
 }
 
+// Estilos
 const styles = StyleSheet.create({
   container: {
     flex: 1,

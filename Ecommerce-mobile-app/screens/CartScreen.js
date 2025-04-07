@@ -9,10 +9,14 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useCart } from '../contexts/CartContext';
 import { decode as atob } from 'base-64';
+
+// Context para el carrito
+import { useCart } from '../contexts/CartContext';
+
+// Función para crear la orden
+import { createOrder } from '../api';
 
 export default function CartScreen() {
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
@@ -23,7 +27,7 @@ export default function CartScreen() {
       const token = await AsyncStorage.getItem('userToken');
       if (token) {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        setClientId(payload.id);
+        setClientId(payload.id); // Ajusta la propiedad si tu payload usa otra key
       }
     };
     getClientIdFromToken();
@@ -42,31 +46,18 @@ export default function CartScreen() {
     }
 
     const productsFormatted = cart.map((item) => ({
-      productId: item.id,
-      quantity: item.quantity,
+      productId: item.id,       // Asegúrate de usar 'productId'
+      quantity: item.quantity,  // y 'quantity'
     }));
 
     try {
-      const token = await AsyncStorage.getItem('userToken');
-      await axios.post(
-        'https://esb-service-production-132b.up.railway.app/api/v1/esb/order',
-        {
-          clientId,
-          products: productsFormatted,
-          total: parseFloat(getTotal()),
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await createOrder(clientId, productsFormatted, parseFloat(getTotal()));
 
       Alert.alert('✅ Orden completada', 'Tu pedido ha sido registrado correctamente.');
       clearCart();
     } catch (error) {
       console.error('Error al registrar orden:', error);
-      Alert.alert('Error', 'No se pudo registrar la orden.');
+      Alert.alert('Error', error.message || 'No se pudo registrar la orden.');
     }
   };
 
@@ -80,7 +71,7 @@ export default function CartScreen() {
           <Text style={styles.quantityLabel}>Cantidad:</Text>
           <TextInput
             style={styles.quantityInput}
-            value={item.quantity.toString()}
+            value={String(item.quantity)}
             keyboardType="numeric"
             onChangeText={(text) =>
               updateQuantity(item.id, Math.max(1, parseInt(text) || 1))

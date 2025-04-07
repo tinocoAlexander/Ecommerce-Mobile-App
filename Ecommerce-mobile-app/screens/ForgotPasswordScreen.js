@@ -20,9 +20,10 @@ export default function ForgotPasswordScreen({ navigation }) {
     }
 
     try {
-      await axios.post(
-        'https://esb-service-production-132b.up.railway.app/api/v1/esb/recover',
-        { username: email }
+      // Llamamos al ESB en la ruta /user/recover
+      const response = await axios.post(
+        'https://esb-service-production-132b.up.railway.app/api/v1/esb/user/recover',
+        { email } // Asegúrate de usar la key "email"
       );
 
       Alert.alert(
@@ -31,8 +32,11 @@ export default function ForgotPasswordScreen({ navigation }) {
       );
       navigation.goBack();
     } catch (error) {
-      console.error('Error:', error.response?.data || error.message);
-      Alert.alert('Error', 'No se pudo enviar el correo de recuperación.');
+      console.error('Error en recoverPassword:', error.response?.data || error.message);
+      Alert.alert(
+        'Error',
+        error.response?.data?.message || 'No se pudo enviar el correo de recuperación.'
+      );
     }
   };
 
@@ -64,6 +68,7 @@ export default function ForgotPasswordScreen({ navigation }) {
   );
 }
 
+// Estilos
 const styles = StyleSheet.create({
   container: {
     flex: 1,
