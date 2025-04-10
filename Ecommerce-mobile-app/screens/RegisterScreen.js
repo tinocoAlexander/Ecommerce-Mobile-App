@@ -10,31 +10,53 @@ import {
 } from 'react-native';
 import axios from 'axios';
 
-// URL de tu ESB para crear usuario sin token
-const ESB_USER_ENDPOINT = 'https://esb-service-production-132b.up.railway.app/api/v1/esb/user';
+const USER_ENDPOINT = 'https://esb-service-production-132b.up.railway.app/api/v1/esb/user';
+const LOGIN_ENDPOINT = 'https://esb-service-production-132b.up.railway.app/api/v1/esb/user/login';
+const CLIENT_ENDPOINT = 'https://esb-service-production-132b.up.railway.app/api/v1/esb/client';
 
 export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
+  const [name, setName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [direction, setDirection] = useState('');
 
   const handleRegister = async () => {
-    if (!username || !password || !phone) {
+    if (!username || !password || !phone || !name || !lastName || !birthDate || !direction) {
       Alert.alert('Campos requeridos', 'Completa todos los campos');
       return;
     }
 
-    // RECOMENDACIÓN: Verificar aquí que password >= 8 caracteres,
-    // phone de 10 dígitos, etc., para un feedback inmediato.
-
     try {
-      // Enviamos los campos junto con roleId (ej: 2 para 'cliente')
-      const response = await axios.post(ESB_USER_ENDPOINT, {
+      // Paso 1: Crear el usuario con roleId: 4 (cliente)
+      await axios.post(USER_ENDPOINT, {
         username,
         password,
         phone,
-        roleId: 2 // Ajusta según el id del rol en tu DB
+        roleId: 2,
       });
+
+      // Paso 2: Login para obtener el token
+      const loginRes = await axios.post(LOGIN_ENDPOINT, { username, password });
+      const token = loginRes.data.token;
+
+      // Paso 3: Crear el cliente usando el token
+      await axios.post(CLIENT_ENDPOINT,
+        {
+          name,
+          lastName,
+          birthDate,
+          direction,
+          mail: username,
+          phone,
+        },
+        {
+          headers: {
+          },
+        }
+      );
 
       Alert.alert('Registro exitoso', 'Ya puedes iniciar sesión');
       navigation.replace('Login');
@@ -56,29 +78,13 @@ export default function RegisterScreen({ navigation }) {
       />
       <Text style={styles.title}>Crear cuenta</Text>
 
-      <TextInput
-        placeholder="Correo electrónico"
-        value={username}
-        onChangeText={setUsername}
-        style={styles.input}
-        placeholderTextColor="#999"
-      />
-      <TextInput
-        placeholder="Contraseña"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        style={styles.input}
-        placeholderTextColor="#999"
-      />
-      <TextInput
-        placeholder="Teléfono"
-        value={phone}
-        onChangeText={setPhone}
-        style={styles.input}
-        keyboardType="phone-pad"
-        placeholderTextColor="#999"
-      />
+      <TextInput placeholder="Nombre" value={name} onChangeText={setName} style={styles.input} />
+      <TextInput placeholder="Apellido" value={lastName} onChangeText={setLastName} style={styles.input} />
+      <TextInput placeholder="Fecha de nacimiento (YYYY-MM-DD)" value={birthDate} onChangeText={setBirthDate} style={styles.input} />
+      <TextInput placeholder="Dirección" value={direction} onChangeText={setDirection} style={styles.input} />
+      <TextInput placeholder="Correo electrónico" value={username} onChangeText={setUsername} style={styles.input} />
+      <TextInput placeholder="Contraseña" value={password} onChangeText={setPassword} secureTextEntry style={styles.input} />
+      <TextInput placeholder="Teléfono" value={phone} onChangeText={setPhone} style={styles.input} keyboardType="phone-pad" />
 
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>Registrarse</Text>
@@ -91,7 +97,7 @@ export default function RegisterScreen({ navigation }) {
   );
 }
 
-// Estilos
+// Estilos (igual que antes)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
